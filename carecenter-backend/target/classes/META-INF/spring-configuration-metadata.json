@@ -1,0 +1,22 @@
+{
+  "groups": [
+    {
+      "name": "rsa",
+      "type": "com.example.carecenter.config.RsaKeyProperties",
+      "sourceType": "com.example.carecenter.config.RsaKeyProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "rsa.private-key-location",
+      "type": "java.lang.String",
+      "sourceType": "com.example.carecenter.config.RsaKeyProperties"
+    },
+    {
+      "name": "rsa.public-key-location",
+      "type": "java.lang.String",
+      "sourceType": "com.example.carecenter.config.RsaKeyProperties"
+    }
+  ],
+  "hints": []
+}
