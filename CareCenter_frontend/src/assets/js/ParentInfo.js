@@ -1,0 +1,324 @@
+import request from "@/utils/request";
+
+const {ElMessage} = require("element-plus");
+
+export default {
+    name: "ParentInfo",
+    data() {
+        const checkPhone = (rule, value, callback) => {
+            const phoneReg = /^1[3|4|5|6|7|8][0-9]{9}$/;
+            if (!value) {
+                return callback(new Error("电话号码不能为空"));
+            }
+            setTimeout(() => {
+                if (!Number.isInteger(+value)) {
+                    callback(new Error("请输入数字值"));
+                } else {
+                    if (phoneReg.test(value)) {
+                        callback();
+                    } else {
+                        callback(new Error("电话号码格式不正确"));
+                    }
+                }
+            }, 100);
+        };
+        const checkPass = (rule, value, callback) => {
+            if (!this.editJudge) {
+                if (value == "") {
+                    callback(new Error("请再次输入密码"));
+                } else if (value !== this.form.password) {
+                    callback(new Error("两次输入密码不一致!"));
+                } else {
+                    callback();
+                }
+            } else {
+                callback();
+            }
+        };
+        return {
+            showpassword: true,
+            judgeAddOrEdit: true,
+            loading: true,
+            editJudge: true,
+            disabled: false,
+            judge: false,
+            dialogVisible: false,
+            search: "",
+            currentPage: 1,
+            pageSize: 10,
+            total: 0,
+            tableData: [],
+            studentList: [],
+            form: {
+                username: "",
+                name: "",
+                age: "",
+                gender: "",
+                phoneNum: "",
+                email: "",
+                studentUsername: "",
+                studentUsernames: [],
+            },
+            rules: {
+                username: [
+                    {required: true, message: "请输入用户名", trigger: "blur"},
+                    {
+                        pattern: /^[a-zA-Z0-9]{4,9}$/,
+                        message: "必须由 4 到 9 个字母或数字组成",
+                        trigger: "blur",
+                    },
+                ],
+                name: [
+                    {required: true, message: "请输入姓名", trigger: "blur"},
+                    {
+                        pattern: /^(?:[\u4E00-\u9FA5·]{2,10})$/,
+                        message: "必须由 2 到 10 个汉字组成",
+                        trigger: "blur",
+                    },
+                ],
+                age: [
+                    {required: true, message: "请输入年龄", trigger: "blur"},
+                    {type: "number", message: "年龄必须为数字值", trigger: "blur"},
+                    {
+                        pattern: /^(1|[1-9]\d?|100)$/,
+                        message: "范围：1-100",
+                        trigger: "blur",
+                    },
+                ],
+                gender: [{required: true, message: "请选择性别", trigger: "change"}],
+                phoneNum: [{required: true, validator: checkPhone, trigger: "blur"}],
+                email: [
+                    {type: "email", message: "请输入正确的邮箱地址", trigger: "blur"},
+                ],
+                password: [
+                    {required: true, message: "请输入密码", trigger: "blur"}
+                ],
+                checkPass: [{validator: checkPass, trigger: "blur"}],
+                studentUsernames: [],
+            },
+            editDisplay: {
+                display: "block",
+            },
+            display: {
+                display: "none",
+            },
+        };
+    },
+    created() {
+        this.load();
+        this.loading = true;
+        setTimeout(() => {
+            this.loading = false;
+        }, 1000);
+    },
+    methods: {
+        async load() {
+            request.get("/parent/find", {
+                params: {
+                    pageNum: this.currentPage,
+                    pageSize: this.pageSize,
+                    search: this.search,
+                },
+            }).then((res) => {
+                console.log(res);
+                this.tableData = (res.data.records || []).map(item => {
+                    const studentUsernames = Array.isArray(item.studentUsernames)
+                        ? item.studentUsernames
+                        : ((item.studentUsername || '').split(',').map(v => v.trim()).filter(Boolean));
+                    return {
+                        ...item,
+                        studentUsernames,
+                        studentUsernamesDisplay: studentUsernames.join('、')
+                    };
+                });
+                this.total = res.data.total;
+                this.loading = false;
+            });
+        },
+        reset() {
+            this.search = ''
+            request.get("/parent/find", {
+                params: {
+                    pageNum: 1,
+                    pageSize: this.pageSize,
+                    search: this.search,
+                },
+            }).then((res) => {
+                console.log(res);
+                this.tableData = (res.data.records || []).map(item => {
+                    const studentUsernames = Array.isArray(item.studentUsernames)
+                        ? item.studentUsernames
+                        : ((item.studentUsername || '').split(',').map(v => v.trim()).filter(Boolean));
+                    return {
+                        ...item,
+                        studentUsernames,
+                        studentUsernamesDisplay: studentUsernames.join('、')
+                    };
+                });
+                this.total = res.data.total;
+                this.loading = false;
+            });
+        },
+        filterTag(value, row) {
+            return row.gender === value;
+        },
+        add() {
+            this.dialogVisible = true;
+            this.$nextTick(() => {
+                this.$refs.form.resetFields();
+                this.judgeAddOrEdit = false;
+                this.editDisplay = {display: "none"};
+                this.disabled = false;
+                this.form = { studentUsernames: [] };
+                this.judge = false;
+            });
+        },
+        loadStudents() {
+            request.get("/stu/find", {
+                params: {
+                    pageNum: 1,
+                    pageSize: 1000,
+                    search: "",
+                },
+            }).then((res) => {
+                if (res.code === "0") {
+                    this.studentList = res.data.records;
+                }
+            });
+        },
+        save() {
+            this.$refs.form.validate((valid) => {
+                if (valid) {
+                    const selectedStudents = Array.isArray(this.form.studentUsernames)
+                        ? this.form.studentUsernames.filter(Boolean)
+                        : [];
+                    this.form.studentUsernames = selectedStudents;
+                    this.form.studentUsername = selectedStudents.join(',');
+
+                    if (selectedStudents.length > 0) {
+                        Promise.all(selectedStudents.map(stu => request.get("/parent/existByStudent/" + stu)))
+                            .then(results => {
+                                const conflict = results.find(checkRes =>
+                                    checkRes.code === "0" && checkRes.data && checkRes.data.username !== this.form.username
+                                );
+                                if (conflict) {
+                                    ElMessage({
+                                        message: "所选学生中存在已绑定其他家长的账号",
+                                        type: "error",
+                                    });
+                                    return;
+                                }
+                                this.performSave();
+                            });
+                    } else {
+                        this.performSave();
+                    }
+                }
+            });
+        },
+        performSave() {
+            if (this.judge === false) {
+                request.post("/parent/add", this.form).then((res) => {
+                    console.log(res);
+                    if (res.code === "0") {
+                        ElMessage({
+                            message: "新增成功",
+                            type: "success",
+                        });
+                        this.search = "";
+                        this.loading = true;
+                        this.load();
+                        this.dialogVisible = false;
+                    } else {
+                        ElMessage({
+                            message: res.msg,
+                            type: "error",
+                        });
+                    }
+                });
+            } else {
+                request.put("/parent/update", this.form).then((res) => {
+                    console.log(res);
+                    if (res.code === "0") {
+                        ElMessage({
+                            message: "修改成功",
+                            type: "success",
+                        });
+                        this.search = "";
+                        this.load();
+                        this.dialogVisible = false;
+                    } else {
+                        ElMessage({
+                            message: res.msg,
+                            type: "error",
+                        });
+                    }
+                });
+            }
+        },
+        cancel() {
+            this.$refs.form.resetFields();
+            this.display = {display: "none"};
+            this.editJudge = true;
+            this.disabled = true;
+            this.showpassword = true;
+            this.dialogVisible = false;
+        },
+        EditPass() {
+            if (this.editJudge) {
+                this.showpassword = false;
+                this.display = {display: "flex"};
+                this.disabled = false;
+                this.editJudge = false;
+            } else {
+                this.showpassword = true;
+                this.display = {display: "none"};
+                this.editJudge = true;
+                this.disabled = true;
+            }
+        },
+        handleEdit(row) {
+            this.judge = true;
+            this.dialogVisible = true;
+            this.$nextTick(() => {
+                this.$refs.form.resetFields();
+                this.form = JSON.parse(JSON.stringify(row));
+                if (!Array.isArray(this.form.studentUsernames)) {
+                    this.form.studentUsernames = (this.form.studentUsername || '')
+                        .split(',')
+                        .map(v => v.trim())
+                        .filter(Boolean);
+                }
+                this.judgeAddOrEdit = true;
+                this.editDisplay = {display: "block"};
+                this.disabled = true;
+            });
+        },
+        async handleDelete(username) {
+            console.log(username);
+            request.delete("/parent/delete/" + username).then((res) => {
+                if (res.code === "0") {
+                    ElMessage({
+                        message: "删除成功",
+                        type: "success",
+                    });
+                    this.search = "";
+                    this.load();
+                } else {
+                    ElMessage({
+                        message: res.msg,
+                        type: "error",
+                    });
+                }
+            });
+        },
+        handleSizeChange(pageSize) {
+            this.pageSize = pageSize;
+            this.load();
+        },
+        handleCurrentChange(pageNum) {
+            this.currentPage = pageNum;
+            this.load();
+        },
+    },
+};

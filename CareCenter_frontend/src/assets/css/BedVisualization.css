@@ -1,0 +1,267 @@
+/* 房间信息卡片 */
+.room-info-card {
+  margin: 20px 0;
+}
+
+.room-header {
+  display: flex;
+  align-items: center;
+}
+
+.room-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-right: 15px;
+  color: #303133;
+}
+
+/* 床位可视化容器 */
+.bed-visualization-container {
+  padding: 30px;
+  background: linear-gradient(to bottom, #f5f7fa 0%, #ffffff 100%);
+  border-radius: 8px;
+  min-height: 400px;
+}
+
+.bed-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* 上下铺床位 */
+.bunk-bed {
+  position: relative;
+  width: 200px;
+  height: 320px;
+  margin: 0 auto;
+  transition: transform 0.3s ease;
+}
+
+.bunk-bed:hover {
+  transform: scale(1.02);
+}
+
+/* 床位单元 */
+.bed-unit {
+  position: absolute;
+  width: 100%;
+  height: 140px;
+  border-radius: 10px;
+  border: 3px solid #dcdfe6;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+.bed-unit:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
+  border-color: #409eff;
+}
+
+/* 上铺 */
+.upper-bed {
+  top: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+/* 下铺 */
+.lower-bed {
+  bottom: 0;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+/* 空床位状态 */
+.bed-unit.empty {
+  background: linear-gradient(135deg, #e0e7ff 0%, #cffafe 100%);
+  border-style: dashed;
+  color: #909399;
+}
+
+.upper-bed.empty {
+  background: linear-gradient(135deg, #e0e7ff 0%, #ddd6fe 100%);
+}
+
+.lower-bed.empty {
+  background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+}
+
+/* 已占用床位状态 */
+.bed-unit.occupied {
+  border-color: #67c23a;
+}
+
+/* 床位梯子 */
+.bed-ladder {
+  position: absolute;
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 280px;
+  background: linear-gradient(to bottom, 
+    #8b5cf6 0%, 
+    #8b5cf6 10%, 
+    transparent 10%, 
+    transparent 20%,
+    #8b5cf6 20%,
+    #8b5cf6 30%,
+    transparent 30%,
+    transparent 40%,
+    #8b5cf6 40%,
+    #8b5cf6 50%,
+    transparent 50%,
+    transparent 60%,
+    #8b5cf6 60%,
+    #8b5cf6 70%,
+    transparent 70%,
+    transparent 80%,
+    #8b5cf6 80%,
+    #8b5cf6 90%,
+    transparent 90%,
+    transparent 100%
+  );
+  border-radius: 4px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* 床位号 */
+.bed-number {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  opacity: 0.9;
+  letter-spacing: 0.5px;
+}
+
+/* 床位学生信息 */
+.bed-student {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  backdrop-filter: blur(10px);
+}
+
+.bed-student .el-icon {
+  font-size: 24px;
+  margin-bottom: 3px;
+}
+
+/* 空床位提示 */
+.bed-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  opacity: 0.7;
+  font-weight: 500;
+}
+
+.bed-empty .el-icon {
+  font-size: 28px;
+  margin-bottom: 3px;
+}
+
+/* 对话框样式 */
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .bed-layout {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 20px;
+  }
+
+  .bunk-bed {
+    width: 160px;
+    height: 280px;
+  }
+
+  .bed-unit {
+    height: 120px;
+    padding: 10px;
+  }
+
+  .bed-ladder {
+    height: 240px;
+  }
+
+  .bed-number {
+    font-size: 12px;
+  }
+
+  .bed-student {
+    font-size: 14px;
+  }
+}
+
+/* 床位tooltip提示 */
+.bed-tooltip {
+  position: absolute;
+  z-index: 9999;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+/* 加载动画 */
+.bed-unit.loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* 床位点击动画 */
+.bed-unit:active {
+  transform: scale(0.98);
+}
+
+/* 表单样式优化 */
+.el-form-item {
+  margin-bottom: 20px;
+}
+
+.el-form-item__label {
+  font-weight: 500;
+  color: #606266;
+}
+
+/* 空状态样式 */
+.el-empty {
+  padding: 60px 0;
+}

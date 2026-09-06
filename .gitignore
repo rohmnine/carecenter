@@ -1,0 +1,16 @@
+.zcode/
+.codeartsdoer/
+
+# Build outputs
+target/
+node_modules/
+dist/
+
+# IDE
+.idea/
+*.iml
+
+# OS / logs
+.DS_Store
+Thumbs.db
+*.log
